@@ -1,5 +1,29 @@
-#####################################################################################
-# Terraform module examples are meant to show an _example_ on how to use a module
-# per use-case. The code below should not be copied directly but referenced in order
-# to build your own root module that invokes this module
-###################################################################################:L##
+#
+## Provisions a central inspection vpc 
+#
+
+locals {
+  firewall_rules = {
+    "default.rules" : file("${path.module}/rules/default.rules"),
+  }
+}
+
+## Provision the inspection vpc
+module "inspection" {
+  source  = "appvia/inspection/aws"
+  version = "0.0.1"
+
+  availability_zones           = var.availability_zones
+  create_kms_key               = var.create_kms_key
+  cloudwatch_kms               = var.cloudwatch_kms
+  cloudwatch_retention_in_days = var.cloudwatch_retention_in_days
+  ip_prefixes                  = var.ip_prefixes
+  name                         = var.name
+  firewall_rules               = local.firewall_rules
+  ram_principals               = var.ram_principals
+  policy_variables             = var.policy_variables
+  tags                         = var.tags
+  transit_gateway_name         = var.transit_gateway_name
+  vpc_cidr                     = var.vpc_cidr
+}
+
