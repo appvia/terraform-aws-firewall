@@ -1,4 +1,4 @@
-![Github Actions](../../workflows/terraform/badge.svg)
+![Github Actions](../../workflows/terraform.yml/badge.svg)
 
 # Terraform AWS Inspection VPC
 
