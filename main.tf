@@ -12,7 +12,7 @@ data "aws_ec2_transit_gateway" "current" {
 ## Provision the VPC for the inspection service
 module "vpc" {
   source  = "appvia/network/aws"
-  version = "0.1.0"
+  version = "0.1.3"
 
   availability_zones                    = var.availability_zones
   enable_nat_gateway                    = var.enable_egress
