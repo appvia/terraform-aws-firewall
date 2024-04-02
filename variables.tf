@@ -82,6 +82,21 @@ variable "ram_principals" {
   default     = {}
 }
 
+variable "ip_prefixes" {
+  description = "A collection of ip sets which can be referenced by the rules"
+  type = map(object({
+    name           = string
+    address_family = string
+    max_entries    = number
+    description    = string
+    entries = list(object({
+      cidr        = string
+      description = string
+    }))
+  }))
+  default = {}
+}
+
 variable "firewall_rules" {
   description = "A collection of firewall rules to add to the policy"
   type        = list(string)

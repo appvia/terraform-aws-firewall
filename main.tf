@@ -9,6 +9,22 @@ data "aws_ec2_transit_gateway" "current" {
   }
 }
 
+## Provision a prefix list for the internal networks
+resource "aws_ec2_managed_prefix_list" "internal" {
+  name           = "${var.name}-all-networks"
+  address_family = "IPv4"
+  max_entries    = 5
+  tags           = var.tags
+
+  dynamic "entry" {
+    for_each = var.network_cidr_blocks
+    content {
+      cidr = entry.value
+    }
+  }
+}
+
+
 ## Provision the VPC for the inspection service
 module "vpc" {
   source  = "appvia/network/aws"
@@ -27,7 +43,7 @@ module "vpc" {
   vpc_cidr                              = var.vpc_cidr
 
   transit_gateway_routes = {
-    private = "10.0.0.0/8"
+    private = aws_ec2_managed_prefix_list.internal.id
   }
 }
 

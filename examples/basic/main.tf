@@ -10,7 +10,8 @@ locals {
 
 ## Provision the inspection vpc
 module "inspection" {
-  source = "../.."
+  source  = "appvia/inspection/aws"
+  version = "0.0.1"
 
   availability_zones           = var.availability_zones
   create_kms_key               = var.create_kms_key
