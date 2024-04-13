@@ -1,13 +1,3 @@
-## Find the sts context
-data "aws_caller_identity" "current" {}
-
-## Find the transit gateway
-data "aws_ec2_transit_gateway" "current" {
-  filter {
-    name   = "tag:Name"
-    values = [var.transit_gateway_name]
-  }
-}
 
 ## Provision the VPC for the inspection service
 module "vpc" {
@@ -31,9 +21,7 @@ module "vpc" {
   }
 }
 
-#
 ## Provision the AWS Network Firewall service in the inspection VPC
-#
 module "network_firewall" {
   source  = "aws-ia/networkfirewall/aws"
   version = "1.0.1"
@@ -41,8 +29,8 @@ module "network_firewall" {
   network_firewall_description              = "Inspection VPC Firewall for ${var.name} environment"
   network_firewall_name                     = var.name
   network_firewall_policy                   = aws_networkfirewall_firewall_policy.this.arn
-  network_firewall_policy_change_protection = false
-  network_firewall_subnet_change_protection = false
+  network_firewall_policy_change_protection = var.enable_policy_change_protection
+  network_firewall_subnet_change_protection = var.enable_subnet_change_protection
   number_azs                                = var.availability_zones
   routing_configuration                     = local.routing_configuration
   tags                                      = var.tags
@@ -52,7 +40,12 @@ module "network_firewall" {
   logging_configuration = {
     alert_log = {
       cloudwatch_logs = {
-        logGroupName = aws_cloudwatch_log_group.logging.name
+        logGroupName = aws_cloudwatch_log_group.alert_log.name
+      }
+    }
+    flow_log = {
+      cloudwatch_logs = {
+        logGroupName = aws_cloudwatch_log_group.flow_log.name
       }
     }
   }

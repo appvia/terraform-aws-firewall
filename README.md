@@ -39,6 +39,121 @@ The module use the contents of the `var.firewall_rules` to source in the files a
 
 Currently the inspection VPC is setup to record all events within the `${var.name}-alert-log` CloudWatch logs. If you need to see what is being blocked or any alerting event, enter into the Network account and view the logs there.
 
+## Pipeline Permissions
+
+The following pipeline permissions are required to deploy the inspection VPC
+
+```hcl
+# tfsec:ignore:aws-iam-no-policy-wildcards
+module "network_inspection_vpc_admin" {
+  count   = var.repositories.firewall != null ? 1 : 0
+  source  = "appvia/oidc/aws//modules/role"
+  version = "1.2.0"
+
+  name                = var.repositories.firewall.role_name
+  common_provider     = var.scm_name
+  description         = "Deployment role used to deploy the inspection vpc"
+  permission_boundary = var.default_permissions_boundary_name
+  repository          = var.repositories.firewall.url
+  tags                = var.tags
+
+  read_only_policy_arns = [
+    "arn:aws:iam::aws:policy/AWSResourceAccessManagerReadOnlyAccess",
+    "arn:aws:iam::aws:policy/ReadOnlyAccess",
+  ]
+  read_write_policy_arns = [
+    "arn:aws:iam::aws:policy/AWSResourceAccessManagerFullAccess",
+    "arn:aws:iam::aws:policy/AmazonEC2FullAccess",
+    "arn:aws:iam::aws:policy/CloudFormationFullAccess", # Assuming you are deploying the dashboard
+    "arn:aws:iam::aws:policy/LambdaFullAccess",
+    "arn:aws:iam::aws:policy/ReadOnlyAccess",
+    "arn:aws:iam::aws:policy/job-function/NetworkAdministrator",
+  ]
+
+  read_write_inline_policies = {
+    "additional" = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "network-firewall:Associate*",
+            "network-firewall:Create*",
+            "network-firewall:Delete*",
+            "network-firewall:Describe*",
+            "network-firewall:Disassociate*",
+            "network-firewall:List*",
+            "network-firewall:Put*",
+            "network-firewall:Tag*",
+            "network-firewall:Untag*",
+            "network-firewall:Update*",
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        },
+        {
+          Action   = ["iam:CreateServiceLinkedRole"],
+          Effect   = "Allow",
+          Resource = ["arn:aws:iam::*:role/aws-service-role/network-firewall.amazonaws.com/AWSServiceRoleForNetworkFirewall"]
+        },
+        {
+          Action   = ["logs:*"],
+          Effect   = "Allow",
+          Resource = ["*"]
+        }
+      ]
+
+
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "network-firewall:Describe*",
+            "network-firewall:List*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        },
+        {
+          Action = [
+            "logs:Get*",
+            "logs:List*",
+            "logs:Describe*",
+          ],
+          Effect   = "Allow",
+          Resource = ["*"]
+        }
+      ]
+    })
+  }
+
+  read_only_inline_policies = {
+    "additional" = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+          Action = [
+            "network-firewall:Describe*",
+            "network-firewall:List*"
+          ]
+          Effect   = "Allow"
+          Resource = "*"
+        },
+        {
+          Action = [
+            "logs:Describe*",
+            "logs:Get*",
+            "logs:List*",
+          ],
+          Effect   = "Allow",
+          Resource = ["*"]
+        }
+      ]
+    })
+  }
+
+
+```
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
@@ -64,7 +179,9 @@ Currently the inspection VPC is setup to record all events within the `${var.nam
 
 | Name | Type |
 |------|------|
-| [aws_cloudwatch_log_group.logging](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
+| [aws_cloudformation_stack.dashboard](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudformation_stack) | resource |
+| [aws_cloudwatch_log_group.alert_log](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
+| [aws_cloudwatch_log_group.flow_log](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_log_group) | resource |
 | [aws_ec2_managed_prefix_list.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ec2_managed_prefix_list) | resource |
 | [aws_kms_key.current](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_networkfirewall_firewall_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/networkfirewall_firewall_policy) | resource |
@@ -90,7 +207,10 @@ Currently the inspection VPC is setup to record all events within the `${var.nam
 | <a name="input_cloudwatch_kms"></a> [cloudwatch\_kms](#input\_cloudwatch\_kms) | Name of the KMS key to use for CloudWatch logs | `string` | `""` | no |
 | <a name="input_cloudwatch_retention_in_days"></a> [cloudwatch\_retention\_in\_days](#input\_cloudwatch\_retention\_in\_days) | Number of days to retain CloudWatch logs | `number` | `30` | no |
 | <a name="input_create_kms_key"></a> [create\_kms\_key](#input\_create\_kms\_key) | Create a KMS key for CloudWatch logs | `bool` | `false` | no |
+| <a name="input_enable_dashboard"></a> [enable\_dashboard](#input\_enable\_dashboard) | Indicates we should deploy the CloudWatch Insights dashboard | `bool` | `false` | no |
 | <a name="input_enable_egress"></a> [enable\_egress](#input\_enable\_egress) | Indicates the inspectio vpc should have egress enabled | `bool` | `false` | no |
+| <a name="input_enable_policy_change_protection"></a> [enable\_policy\_change\_protection](#input\_enable\_policy\_change\_protection) | Indicates the firewall policy should be protected from changes | `bool` | `false` | no |
+| <a name="input_enable_subnet_change_protection"></a> [enable\_subnet\_change\_protection](#input\_enable\_subnet\_change\_protection) | Indicates the firewall subnets should be protected from changes | `bool` | `false` | no |
 | <a name="input_ip_prefixes"></a> [ip\_prefixes](#input\_ip\_prefixes) | A collection of ip sets which can be referenced by the rules | <pre>map(object({<br>    name           = string<br>    address_family = string<br>    max_entries    = number<br>    description    = string<br>    entries = list(object({<br>      cidr        = string<br>      description = string<br>    }))<br>  }))</pre> | `{}` | no |
 | <a name="input_network_cidr_blocks"></a> [network\_cidr\_blocks](#input\_network\_cidr\_blocks) | List of CIDR blocks defining the aws environment | `list(string)` | <pre>[<br>  "10.0.0.0/8",<br>  "192.168.0.0/24"<br>]</pre> | no |
 | <a name="input_policy_variables"></a> [policy\_variables](#input\_policy\_variables) | A map of policy variables made available to the suricata rules | `map(list(string))` | `{}` | no |

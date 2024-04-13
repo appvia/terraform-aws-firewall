@@ -31,4 +31,6 @@ locals {
     } : {
     connectivity_subnet_route_tables = { for k, v in module.vpc.rt_attributes_by_type_by_az.transit_gateway : k => v.id }
   }
+  ## The KMS key used to encrypt the CloudWatch logs
+  kms_key_arn = var.create_kms_key ? aws_kms_key.current[0].arn : data.aws_kms_key.current[0].arn
 }

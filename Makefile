@@ -16,7 +16,7 @@
 #
 AUTHOR_EMAIL=info@appvia.io
 
-.PHONY: all security lint format documentation documentation-examples
+.PHONY: all security lint format documentation documentation-examples validate-all validate validate-examples init
 
 default: all
 
@@ -33,7 +33,7 @@ security:
 	@echo "--> Running Security checks"
 	@tfsec .
 
-documentation: 
+documentation: documentation-examples
 	@echo "--> Generating documentation"
 	@terraform-docs markdown table --output-file ${PWD}/README.md --output-mode inject .
 
@@ -45,9 +45,31 @@ init:
 	@echo "--> Running terraform init"
 	@terraform init -backend=false
 
+validate-all:
+	@echo "--> Running all validation checks"
+	$(MAKE) validate
+	$(MAKE) validate-examples
+
 validate:
 	@echo "--> Running terraform validate"
+	@terraform init -backend=false
 	@terraform validate
+
+validate-examples:
+	@echo "--> Running terraform validate on examples"
+	@find examples -type d -mindepth 1 -maxdepth 1 | while read -r dir; do \
+		echo "--> Validating $$dir"; \
+		terraform -chdir=$$dir init; \
+		terraform -chdir=$$dir validate; \
+	done
+
+verify-rules:
+	@echo "Validating the Suricata rules"
+	$(MAKE) verify-duplicates
+
+verify-duplicates:
+	@echo "Validating the Suricata rules for duplicates"
+	@scripts/check-duplicate-sids.sh
 
 lint:
 	@echo "--> Running tflint"
@@ -58,10 +80,9 @@ format:
 	@echo "--> Running terraform fmt"
 	@terraform fmt -recursive -write=true
 
-verify:
-	@echo "Validating the Suricata rules"
-	$(MAKE) verify-duplicates
-
-verify-duplicates:
-	@echo "Validating the Suricata rules for duplicates"
-	@scripts/check-duplicate-sids.sh
+clean:
+	@echo "--> Cleaning up"
+	@find . -type d -name ".terraform" | while read -r dir; do \
+		echo "--> Removing $$dir"; \
+		rm -rf $$dir; \
+	done
