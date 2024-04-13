@@ -1,0 +1,11 @@
+# Globally rules for all networks
+reject tls any any -> any any (msg:"Rejecting all TLS 1.0 or 1.1"; ssl_version:tls1.0,tls1.1; sid:100000;)
+reject tcp $HOME_NET any -> $EXTERNAL_NET [53,135,139,389,445,1389,3389,4444] (msg:"Deny high risk destination ports"; sid:100001;)
+alert tls $HOME_NET any -> $EXTERNAL_NET any (flow:to_server; msg:"Log TLS traffic to internet"; sid:100102;)
+alert http $HOME_NET any -> $EXTERNAL_NET any (flow:to_server; msg:"Log HTTP traffic to internet"; sid:100103;)
+pass  udp $HOME_NET any -> $EXTERNAL_NET 123 (msg:"Allow all NTP traffic"; app-layer-protocol:ntp; sid:100104;)
+pass  tcp $HOME_NET any -> $EXTERNAL_NET 443 (xbits:isset, allowed_sni_destination_ips, track ip_dst; flow: stateless; sid:100105;)
+pass  tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"Allow tcp all http traffic"; sid:100108;)
+
+# Globally permitted domains from all networks
+pass  tls $HOME_NET any -> $EXTERNAL_NET any (flow:to_server; msg:"Allow TLS traffic"; sid:100202;)

@@ -6,12 +6,15 @@ locals {
   firewall_rules = {
     "default.rules" : file("${path.module}/rules/default.rules"),
   }
+  policy_variables = {
+    "DEVOPS_NET"    = ["10.90.0.0/16"]
+    "ENDPOINTS_NET" = ["10.92.0.0/16"]
+  }
 }
 
 ## Provision the inspection vpc
 module "inspection" {
-  source  = "appvia/inspection/aws"
-  version = "0.0.1"
+  source = "../../"
 
   availability_zones           = var.availability_zones
   create_kms_key               = var.create_kms_key
@@ -22,9 +25,8 @@ module "inspection" {
   name                         = var.name
   firewall_rules               = local.firewall_rules
   ram_principals               = var.ram_principals
-  policy_variables             = var.policy_variables
+  policy_variables             = local.policy_variables
   tags                         = var.tags
-  transit_gateway_name         = var.transit_gateway_name
+  transit_gateway_id           = var.transit_gateway_id
   vpc_cidr                     = var.vpc_cidr
 }
-
