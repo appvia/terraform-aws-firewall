@@ -111,7 +111,10 @@ variable "ip_prefixes" {
 
 variable "firewall_rules" {
   description = "A collection of firewall rules to add to the policy"
-  type        = map(string)
+  type = list(object({
+    name    = string
+    content = string
+  }))
 
   validation {
     condition     = length(var.firewall_rules) > 0
@@ -164,7 +167,7 @@ variable "policy_variables" {
 variable "vpc_id" {
   description = "If reusing an existing VPC, provide the VPC ID and private subnets ids"
   type        = string
-  default     = null
+  default     = ""
 }
 
 variable "private_subnet_id_by_az" {

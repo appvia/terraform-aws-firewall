@@ -1,9 +1,9 @@
 
 ## Provision the VPC for the inspection service
 module "vpc" {
-  count   = local.enable_vpc_creation ? 1 : 0
+  count   = var.vpc_id == "" ? 1 : 0
   source  = "appvia/network/aws"
-  version = "0.2.0"
+  version = "0.2.1"
 
   availability_zones                    = var.availability_zones
   enable_nat_gateway                    = var.enable_egress
@@ -50,4 +50,6 @@ module "network_firewall" {
       }
     }
   }
+
+  depends_on = [module.vpc]
 }
