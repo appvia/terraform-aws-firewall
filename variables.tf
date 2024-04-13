@@ -8,6 +8,24 @@ variable "availability_zones" {
   }
 }
 
+variable "enable_dashboard" {
+  description = "Indicates we should deploy the CloudWatch Insights dashboard"
+  type        = bool
+  default     = false
+}
+
+variable "enable_policy_change_protection" {
+  description = "Indicates the firewall policy should be protected from changes"
+  type        = bool
+  default     = false
+}
+
+variable "enable_subnet_change_protection" {
+  description = "Indicates the firewall subnets should be protected from changes"
+  type        = bool
+  default     = false
+}
+
 variable "enable_egress" {
   description = "Indicates the inspectio vpc should have egress enabled"
   type        = bool

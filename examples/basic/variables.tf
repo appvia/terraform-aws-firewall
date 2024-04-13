@@ -13,6 +13,12 @@ variable "name" {
   type        = string
 }
 
+variable "enable_dashboard" {
+  description = "Indicates we should deploy the CloudWatch Insights dashboard"
+  type        = bool
+  default     = false
+}
+
 variable "region" {
   description = "AWS region to deploy into"
   type        = string
