@@ -4,7 +4,9 @@
 
 <em>Note: the following is purely for illustrative purposes</em>
 
-<img src="docs/inspection.png"></img>
+<p align="center">
+  <img src="docs/inspection.png">
+</p>
 
 This repository manages the inspection vpc and rulesets within the AWS estate. The inspection VPC is seated at the heart of the estate, and leverages [AWS Network Firewall](https://aws.amazon.com/network-firewall/) as a managed solution. It's remit is
 
@@ -74,6 +76,10 @@ This module also supports the ability to encrypt the logs using a KMS key. If th
 The module also supports the ability to deploy a CloudWatch dashboard to visualise the logs. The dashboard is created using a CloudFormation template, and is deployed into the same region as the logs. The dashboard is created using the `aws_cloudformation_stack` resource, and is created using the [assets/cloudfomation/nfw-cloudwatch-dashboard](assets/cloudfomation/nfw-cloudwatch-dashboard.yml) template.
 
 ## Reusing an Existing VPC
+
+<p align="center">
+  <img src="docs/egress.jpg">
+</p>
 
 The module supports the ability to reuse an existing VPC. This is useful when the inspection VPC is being deployed into an existing environment. The options defined depend on whether egress is enabled or not.
 
