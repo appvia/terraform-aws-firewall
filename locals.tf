@@ -1,7 +1,7 @@
 
 locals {
   ## Indicates if we are creating the vpc or reusing an existing one 
-  enable_vpc_creation = var.vpc_id == null ? false : true
+  enable_vpc_creation = var.vpc_id == "" ? true : false
   ## The currente region we are running against 
   region = data.aws_region.current.name
   ## The account id we are running against
@@ -27,10 +27,31 @@ locals {
   } } : {}
   ## Route configuration for inspection without egress 
   route_configuration_without_egress = var.enable_egress ? {} : {
-    connectivity_subnet_route_tables = local.transit_route_table_by_az
+    centralized_inspection_without_egress = {
+      connectivity_subnet_route_tables = local.transit_route_table_by_az
+    }
   }
   # Choose the appropriate route configuration based on whether egress is enabled
   routing_configuration = merge(local.route_configuration_with_egress, local.route_configuration_without_egress)
-  ## The KMS key used to encrypt the CloudWatch logs
-  kms_key_arn = var.create_kms_key ? aws_kms_key.current[0].arn : data.aws_kms_key.current[0].arn
+  ## The arn for the kms key if we are reusing an existing one  
+  existing_kms_arn = var.cloudwatch_kms != "" ? data.aws_kms_key.current[0].arn : null
+  ## The arn for the created kms key if we are creating one 
+  created_kms_arn = var.create_kms_key ? aws_kms_key.current[0].arn : null
+  ## The arn for the kms key, create, existing or none
+  kms_key_arn = try(coalesce(local.created_kms_arn, local.existing_kms_arn), null)
+  ## The firewall rules for the policy, this is the constructed rules with any additional_rule_groups 
+  ## added to the end
+  firewall_rule_groups = concat([
+    {
+      priority = 1000
+      name     = aws_networkfirewall_rule_group.stateful.name
+    }
+  ], var.additional_rule_groups)
+  ## We always add the home_net to the policy variables, to ensure the variable is made accessible to 
+  ## suricata rules
+  firewall_policy_variables = merge({ home_net = var.network_cidr_blocks }, var.policy_variables)
+  ## We merge all the firewall rules into a single string, this is used to create the firewall policy 
+  firewall_merged_rules = join("\n", [
+    for x in var.firewall_rules : format("# --- %s\n%s", x.name, x.content)
+  ])
 }

@@ -38,7 +38,7 @@ resource "aws_kms_key" "current" {
 
 ## Find the KMS key for CloudWatch if we are not creating one
 data "aws_kms_key" "current" {
-  count = var.cloudwatch_kms && !var.create_kms_key != "" ? 1 : 0
+  count = var.cloudwatch_kms != "" && !var.create_kms_key != "" ? 1 : 0
 
   key_id = var.cloudwatch_kms
 }

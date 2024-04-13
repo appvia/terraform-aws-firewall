@@ -5,9 +5,12 @@
 #####################################################################################
 
 locals {
-  firewall_rules = {
-    "default.rules" : file("${path.module}/rules/default.rules"),
-  }
+  firewall_rules = [
+    {
+      name    = "default.rules"
+      content = file("${path.module}/rules/default.rules")
+    },
+  ]
 }
 
 ## Provision a vpc for the inspection firewall 
@@ -18,20 +21,23 @@ module "vpc" {
   availability_zones                    = 3
   enable_transit_gateway                = true
   enable_transit_gateway_appliance_mode = true
-  name                                  = "existing"
-  private_subnet_netmask                = 24
+  name                                  = var.name
+  private_subnet_netmask                = var.private_subnet_netmask
+  public_subnet_netmask                 = var.public_subnet_netmask
   tags                                  = var.tags
   transit_gateway_id                    = var.transit_gateway_id
-  vpc_cidr                              = "100.64.0.0/21"
+  vpc_cidr                              = var.vpc_cidr
 }
 
 ## Provision a inspection firewall, but with an existing vpc
 module "inspection" {
   source = "../.."
 
-  availability_zones = 3
-  create_kms_key     = false
-  name               = "existing"
+  availability_zones = var.availability_zones
+  create_kms_key     = var.create_kms_key
+  enable_dashboard   = var.enable_dashboard
+  enable_egress      = true
+  name               = var.name
   firewall_rules     = local.firewall_rules
   ram_principals     = var.ram_principals
   tags               = var.tags
@@ -45,4 +51,6 @@ module "inspection" {
   transit_route_table_by_az = module.vpc.transit_route_table_by_az
   transit_route_table_ids   = module.vpc.transit_route_table_ids
   vpc_id                    = module.vpc.vpc_id
+
+  depends_on = [module.vpc]
 }

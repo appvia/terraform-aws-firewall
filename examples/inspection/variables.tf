@@ -1,16 +1,13 @@
 variable "availability_zones" {
   description = "Number of availability zones to deploy into"
   type        = number
-
-  validation {
-    condition     = var.availability_zones > 0
-    error_message = "Availability zones must be greater than 0"
-  }
+  default     = 3
 }
 
 variable "name" {
   description = "Name of the environment to deploy into"
   type        = string
+  default     = "inspection"
 }
 
 variable "enable_dashboard" {
@@ -22,6 +19,12 @@ variable "enable_dashboard" {
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
+  default = {
+    GitRepo     = "https://github.com/appvia/terraform-aws-firewall"
+    Team        = "CloudPlatform"
+    Project     = "CloudPlatform"
+    Provisioner = "terraform"
+  }
 }
 
 variable "create_kms_key" {
@@ -40,11 +43,6 @@ variable "cloudwatch_retention_in_days" {
   description = "Number of days to retain CloudWatch logs"
   type        = number
   default     = 30
-
-  validation {
-    condition     = var.cloudwatch_retention_in_days > 0
-    error_message = "CloudWatch retention must be greater than 0"
-  }
 }
 
 variable "transit_gateway_id" {

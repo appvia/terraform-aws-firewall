@@ -1,4 +1,14 @@
 
+output "routing_configuration" {
+  description = "The routing configuration for the firewall."
+  value       = local.routing_configuration
+}
+
+output "private_subnet_id_by_az" {
+  description = "The private subnet IDs by availability zone."
+  value       = local.enable_vpc_creation ? module.vpc[0].private_subnet_id_by_az : var.private_subnet_id_by_az
+}
+
 output "private_subnet_ids" {
   description = "The IDs of the private subnets."
   value       = local.enable_vpc_creation ? module.vpc[0].private_subnet_ids : null
@@ -36,7 +46,7 @@ output "ram_principals" {
 
 output "policy_variables" {
   description = "The policy variables to associate with the firewall."
-  value       = local.policy_variables
+  value       = local.firewall_policy_variables
 }
 
 output "firewall_rule_groups" {
@@ -49,7 +59,12 @@ output "vpc_id" {
   value       = local.enable_vpc_creation ? module.vpc[0].vpc_id : var.vpc_id
 }
 
+output "transit_route_table_by_az" {
+  description = "The transit route table by availability zone."
+  value       = local.transit_route_table_by_az
+}
+
 output "transit_attachment_id" {
   description = "The ID of the transit gateway attachment."
-  value       = local.enable_vpc_creation ? module.vpc[0].transit_attachment_id : null
+  value       = local.enable_vpc_creation ? module.vpc[0].transit_gateway_attachment_id : null
 }

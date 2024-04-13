@@ -1,0 +1,2 @@
+pass tcp $HOME_NET any -> $ENDPOINTS_NET 443 (msg:"Allow all to the private endpoints"; sid:100200;)
+pass tls $HOME_NET any -> $ENDPOINTS_NET any (flow:to_server; msg:"Allow TLS traffic to the private endpoints"; sid:100201;)
