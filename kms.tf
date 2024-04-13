@@ -9,7 +9,7 @@ data "aws_iam_policy_document" "logging" {
     resources = ["*"]
     principals {
       type        = "Service"
-      identifiers = ["logs.${var.region}.amazonaws.com"]
+      identifiers = ["logs.${local.region}.amazonaws.com"]
     }
   }
 

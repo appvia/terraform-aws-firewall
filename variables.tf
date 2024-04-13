@@ -37,11 +37,6 @@ variable "name" {
   type        = string
 }
 
-variable "region" {
-  description = "AWS region to deploy into"
-  type        = string
-}
-
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
@@ -70,10 +65,9 @@ variable "cloudwatch_retention_in_days" {
   }
 }
 
-variable "transit_gateway_name" {
-  description = "Name of the transit gateway"
+variable "transit_gateway_id" {
+  description = "The ID of the Transit Gateway"
   type        = string
-  default     = "tgw"
 }
 
 variable "private_subnet_netmask" {
@@ -85,7 +79,7 @@ variable "private_subnet_netmask" {
 variable "public_subnet_netmask" {
   description = "Netmask for the public subnets"
   type        = number
-  default     = 24
+  default     = 0
 }
 
 variable "vpc_cidr" {
@@ -117,7 +111,7 @@ variable "ip_prefixes" {
 
 variable "firewall_rules" {
   description = "A collection of firewall rules to add to the policy"
-  type        = list(string)
+  type        = map(string)
 
   validation {
     condition     = length(var.firewall_rules) > 0
@@ -164,5 +158,35 @@ variable "additional_rule_groups" {
 variable "policy_variables" {
   description = "A map of policy variables made available to the suricata rules"
   type        = map(list(string))
+  default     = {}
+}
+
+variable "vpc_id" {
+  description = "If reusing an existing VPC, provide the VPC ID and private subnets ids"
+  type        = string
+  default     = null
+}
+
+variable "private_subnet_id_by_az" {
+  description = "If reusing an existing VPC, provider a map of az to subnet id"
+  type        = map(string)
+  default     = {}
+}
+
+variable "transit_route_table_ids" {
+  description = "If reusing an existing VPC, provide the transit route table ids"
+  type        = list(string)
+  default     = []
+}
+
+variable "public_route_table_ids" {
+  description = "If reusing an existing VPC, provide the public route table ids"
+  type        = list(string)
+  default     = []
+}
+
+variable "transit_route_table_by_az" {
+  description = "If reusing an existing VPC, provider a map of az to subnet id"
+  type        = map(string)
   default     = {}
 }

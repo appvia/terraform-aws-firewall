@@ -1,8 +1,9 @@
 
 ## Provision the VPC for the inspection service
 module "vpc" {
+  count   = local.enable_vpc_creation ? 1 : 0
   source  = "appvia/network/aws"
-  version = "0.1.0"
+  version = "0.2.0"
 
   availability_zones                    = var.availability_zones
   enable_nat_gateway                    = var.enable_egress
@@ -13,7 +14,7 @@ module "vpc" {
   private_subnet_netmask                = var.private_subnet_netmask
   public_subnet_netmask                 = var.public_subnet_netmask
   tags                                  = var.tags
-  transit_gateway_id                    = data.aws_ec2_transit_gateway.current.id
+  transit_gateway_id                    = var.transit_gateway_id
   vpc_cidr                              = var.vpc_cidr
 
   transit_gateway_routes = {
@@ -34,8 +35,8 @@ module "network_firewall" {
   number_azs                                = var.availability_zones
   routing_configuration                     = local.routing_configuration
   tags                                      = var.tags
-  vpc_id                                    = module.vpc.vpc_id
-  vpc_subnets                               = local.private_subnet_ids
+  vpc_id                                    = local.vpc_id
+  vpc_subnets                               = local.private_subnet_id_by_az
 
   logging_configuration = {
     alert_log = {

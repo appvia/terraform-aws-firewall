@@ -23,19 +23,15 @@ default: all
 all: 
 	$(MAKE) init
 	$(MAKE) validate
-	$(MAKE) security
 	$(MAKE) lint
+	$(MAKE) security
 	$(MAKE) format
 	$(MAKE) documentation
-	$(MAKE) documentation-examples
 
-security: 
-	@echo "--> Running Security checks"
-	@tfsec .
-
-documentation: documentation-examples
+documentation: 
 	@echo "--> Generating documentation"
 	@terraform-docs markdown table --output-file ${PWD}/README.md --output-mode inject .
+	$(MAKE) documentation-examples
 
 documentation-examples:
 	@echo "--> Generating documentation examples"
@@ -44,6 +40,18 @@ documentation-examples:
 init: 
 	@echo "--> Running terraform init"
 	@terraform init -backend=false
+
+security: 
+	@echo "--> Running Security checks"
+	@tfsec .
+	$(MAKE) security-examples
+
+security-examples:
+	@echo "--> Running Security checks on examples"
+	@find examples -type d -mindepth 1 -maxdepth 1 | while read -r dir; do \
+		echo "--> Validating $$dir"; \
+		tfsec $$dir; \
+	done
 
 validate-all:
 	@echo "--> Running all validation checks"
@@ -54,6 +62,7 @@ validate:
 	@echo "--> Running terraform validate"
 	@terraform init -backend=false
 	@terraform validate
+	$(MAKE) validate-examples
 
 validate-examples:
 	@echo "--> Running terraform validate on examples"
@@ -63,18 +72,19 @@ validate-examples:
 		terraform -chdir=$$dir validate; \
 	done
 
-verify-rules:
-	@echo "Validating the Suricata rules"
-	$(MAKE) verify-duplicates
-
-verify-duplicates:
-	@echo "Validating the Suricata rules for duplicates"
-	@scripts/check-duplicate-sids.sh
-
 lint:
 	@echo "--> Running tflint"
 	@tflint --init 
 	@tflint -f compact
+	$(MAKE) lint-examples
+
+lint-examples:
+	@echo "--> Running tflint on examples"
+	@find examples -type d -mindepth 1 -maxdepth 1 | while read -r dir; do \
+		echo "--> Linting $$dir"; \
+		tflint --chdir=$$dir --init; \
+		tflint --chdir=$$dir -f compact; \
+	done
 
 format: 
 	@echo "--> Running terraform fmt"
@@ -86,3 +96,10 @@ clean:
 		echo "--> Removing $$dir"; \
 		rm -rf $$dir; \
 	done
+
+verify-rules:
+	@echo "Validating the Suricata rules"
+	$(MAKE) verify-duplicates
+
+verify-duplicates:
+	@echo "Validating the Suricata rules for duplicates"

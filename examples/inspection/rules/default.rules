@@ -6,7 +6,9 @@ alert http $HOME_NET any -> $EXTERNAL_NET any (flow:to_server; msg:"Log HTTP tra
 pass  udp $HOME_NET any -> $EXTERNAL_NET 123 (msg:"Allow all NTP traffic"; app-layer-protocol:ntp; sid:100104;)
 pass  tcp $HOME_NET any -> $EXTERNAL_NET 443 (xbits:isset, allowed_sni_destination_ips, track ip_dst; flow: stateless; sid:100105;)
 pass  tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"Allow tcp all http traffic"; sid:100108;)
-pass  tcp $HOME_NET any -> $PRIVATE_VPC_ENDPOINTS_NET 443 (msg:"Allow tcp all https traffic to private link endpoints"; sid:100109;)
+
+pass tcp $HOME_NET any -> $ENDPOINTS_NET 443 (msg:"Allow all to the private endpoints"; sid:100200;)
+pass tls $HOME_NET any -> $ENDPOINTS_NET any (flow:to_server; msg:"Allow TLS traffic to the private endpoints"; sid:100201;)
 
 # Globally permitted domains from all networks
 pass  tls $HOME_NET any -> $EXTERNAL_NET any (flow:to_server; msg:"Allow TLS traffic"; sid:100202;)

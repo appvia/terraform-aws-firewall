@@ -60,7 +60,7 @@ resource "aws_networkfirewall_firewall_policy" "this" {
 
       content {
         priority     = stateful_rule_group_reference.value.priority
-        resource_arn = "arn:aws:network-firewall:${var.region}:${local.account_id}:stateful-rulegroup/${stateful_rule_group_reference.value.name}"
+        resource_arn = "arn:aws:network-firewall:${local.region}:${local.account_id}:stateful-rulegroup/${stateful_rule_group_reference.value.name}"
       }
     }
 

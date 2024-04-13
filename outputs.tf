@@ -1,17 +1,17 @@
 
 output "private_subnet_ids" {
   description = "The IDs of the private subnets."
-  value       = local.private_subnet_ids
+  value       = local.enable_vpc_creation ? module.vpc[0].private_subnet_ids : null
 }
 
 output "public_subnet_ids" {
   description = "The IDs of the public subnets."
-  value       = local.public_subnet_ids
+  value       = local.enable_vpc_creation ? module.vpc[0].public_subnet_ids : null
 }
 
 output "transit_subnet_ids" {
   description = "The IDs of the transit subnets."
-  value       = local.transit_subnet_ids
+  value       = local.enable_vpc_creation ? module.vpc[0].transit_subnet_ids : null
 }
 
 output "firewall_id" {
@@ -46,10 +46,10 @@ output "firewall_rule_groups" {
 
 output "vpc_id" {
   description = "The ID of the VPC."
-  value       = module.vpc.vpc_id
+  value       = local.enable_vpc_creation ? module.vpc[0].vpc_id : var.vpc_id
 }
 
 output "transit_attachment_id" {
   description = "The ID of the transit gateway attachment."
-  value       = module.vpc.transit_gateway_attachment_id
+  value       = local.enable_vpc_creation ? module.vpc[0].transit_attachment_id : null
 }

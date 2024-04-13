@@ -14,6 +14,6 @@ resource "aws_cloudformation_stack" "dashboard" {
     FirewallAlertLogGroupName    = aws_cloudwatch_log_group.alert_log.name,
     FirewallFlowLogGroupName     = aws_cloudwatch_log_group.flow_log.name,
     FirewallName                 = var.name
-    FirewallSubnetList           = local.private_subnet_ids,
+    FirewallSubnetList           = values(local.private_subnet_id_by_az),
   }
 }
