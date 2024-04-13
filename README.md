@@ -37,7 +37,16 @@ The module use the contents of the `var.firewall_rules` to source in the files a
 
 ## Event Logging
 
-Currently the inspection VPC is setup to record all events within the `${var.name}-alert-log` CloudWatch logs. If you need to see what is being blocked or any alerting event, enter into the Network account and view the logs there.
+Currently the inspection VPC is setup to segregate the flow and alert logs into two CloudWatch log groups:
+
+- Alerts: are directed to `${var.name}-alert-log`.
+- Flows: are directed to `${var.name}-flow-log`.
+
+This module also supports the ability to encrypt the logs using a KMS key. If the `var.create_kms_key` is set to true, a KMS key will be created and used to encrypt the logs. The key will be created in the same region as the logs.
+
+## CloudWatch Dashboard
+
+The module also supports the ability to deploy a CloudWatch dashboard to visualise the logs. The dashboard is created using a CloudFormation template, and is deployed into the same region as the logs. The dashboard is created using the `aws_cloudformation_stack` resource, and is created using the [assets/cloudfomation/nfw-cloudwatch-dashboard](assets/cloudfomation/nfw-cloudwatch-dashboard.yml) template.
 
 ## Pipeline Permissions
 
