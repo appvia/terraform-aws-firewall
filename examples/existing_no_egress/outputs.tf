@@ -24,21 +24,6 @@ output "transit_subnet_ids" {
   value       = module.inspection.transit_subnet_ids
 }
 
-#output "firewall_id" {
-#  description = "The ARN of the firewall."
-#  value       = module.inspection.aws_network_firewall.id
-#}
-#
-#output "firewall_arn" {
-#  description = "The ARN of the firewall"
-#  value       = module.inspection.aws_network_firewall.arn
-#}
-
-output "stateful_rule_group_id" {
-  description = "The ID of the stateful rule group."
-  value       = module.inspection.stateful_rule_group_id
-}
-
 output "ram_principals" {
   description = "The principals to share the firewall with."
   value       = module.inspection.ram_principals
