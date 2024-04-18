@@ -44,7 +44,7 @@ locals {
   builtin_firewall_rule_groups = [
     {
       priority = 1000
-      arn      = try(aws_networkfirewall_rule_group.stateful.0.arn, null)
+      arn      = try(aws_networkfirewall_rule_group.stateful[0].arn, null)
     }
   ]
   ## We always add the home_net to the policy variables, to ensure the variable is made accessible to 
