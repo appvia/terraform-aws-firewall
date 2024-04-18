@@ -41,17 +41,17 @@ locals {
   kms_key_arn = try(coalesce(local.created_kms_arn, local.existing_kms_arn), null)
   ## The firewall rules for the policy, this is the constructed rules with any additional_rule_groups 
   ## added to the end
-  firewall_rule_groups = concat([
+  builtin_firewall_rule_groups = [
     {
       priority = 1000
-      name     = aws_networkfirewall_rule_group.stateful.name
+      arn      = try(aws_networkfirewall_rule_group.stateful[0].arn, null)
     }
-  ], var.additional_rule_groups)
+  ]
   ## We always add the home_net to the policy variables, to ensure the variable is made accessible to 
   ## suricata rules
   firewall_policy_variables = merge({ home_net = var.network_cidr_blocks }, var.policy_variables)
   ## We merge all the firewall rules into a single string, this is used to create the firewall policy 
   firewall_merged_rules = join("\n", [
-    for x in var.firewall_rules : format("# --- %s\n%s", x.name, x.content)
+    for x in coalesce(var.firewall_rules, []) : format("# --- %s\n%s", x.name, x.content)
   ])
 }

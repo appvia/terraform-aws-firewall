@@ -1,6 +1,8 @@
 
 ## First we provision the stateful rule group
 resource "aws_networkfirewall_rule_group" "stateful" {
+  count = var.external_rule_groups != null || var.firewall_rules == null ? 0 : 1
+
   name        = "stateful-${var.name}"
   capacity    = var.stateful_capacity
   description = "Stateful rule group for ${var.name} environment"
@@ -65,12 +67,12 @@ resource "aws_networkfirewall_firewall_policy" "this" {
     # Add the stateful rule groups to the policy
     dynamic "stateful_rule_group_reference" {
       for_each = {
-        for x in local.firewall_rule_groups : x.name => x
+        for x in coalesce(var.external_rule_groups, local.builtin_firewall_rule_groups) : x.arn => x
       }
 
       content {
         priority     = stateful_rule_group_reference.value.priority
-        resource_arn = "arn:aws:network-firewall:${local.region}:${local.account_id}:stateful-rulegroup/${stateful_rule_group_reference.value.name}"
+        resource_arn = stateful_rule_group_reference.value.arn
       }
     }
 

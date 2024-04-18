@@ -115,11 +115,7 @@ variable "firewall_rules" {
     name    = string
     content = string
   }))
-
-  validation {
-    condition     = length(var.firewall_rules) > 0
-    error_message = "At least one firewall rule must be defined"
-  }
+  default = null
 }
 
 variable "network_cidr_blocks" {
@@ -149,13 +145,13 @@ variable "stateful_capacity" {
   }
 }
 
-variable "additional_rule_groups" {
+variable "external_rule_groups" {
   description = "A collection of additional rule groups to add to the policy"
   type = list(object({
     priority = number
-    name     = string
+    arn      = string
   }))
-  default = []
+  default = null
 }
 
 variable "policy_variables" {
