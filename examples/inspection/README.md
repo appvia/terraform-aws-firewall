@@ -48,7 +48,6 @@ No resources.
 | <a name="output_public_subnet_ids"></a> [public\_subnet\_ids](#output\_public\_subnet\_ids) | The IDs of the public subnets. |
 | <a name="output_ram_principals"></a> [ram\_principals](#output\_ram\_principals) | The principals to share the firewall with. |
 | <a name="output_routing_configuration"></a> [routing\_configuration](#output\_routing\_configuration) | The routing configuration. |
-| <a name="output_stateful_rule_group_id"></a> [stateful\_rule\_group\_id](#output\_stateful\_rule\_group\_id) | The ID of the stateful rule group. |
 | <a name="output_transit_attachment_id"></a> [transit\_attachment\_id](#output\_transit\_attachment\_id) | The ID of the transit gateway attachment. |
 | <a name="output_transit_route_table_by_az"></a> [transit\_route\_table\_by\_az](#output\_transit\_route\_table\_by\_az) | The transit route table by availability zone. |
 | <a name="output_transit_subnet_ids"></a> [transit\_subnet\_ids](#output\_transit\_subnet\_ids) | The IDs of the transit subnets. |

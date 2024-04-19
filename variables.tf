@@ -8,6 +8,18 @@ variable "availability_zones" {
   }
 }
 
+variable "dashboard_bucket" {
+  description = "The name of the S3 bucket to store the CloudWatch Insights dashboard"
+  type        = string
+  default     = "lza-inspection-cw-dashboard"
+}
+
+variable "dashboard_key" {
+  description = "The name of the S3 bucket key to store the CloudWatch Insights dashboard"
+  type        = string
+  default     = "nfw-cloudwatch-dashboard.yml"
+}
+
 variable "enable_dashboard" {
   description = "Indicates we should deploy the CloudWatch Insights dashboard"
   type        = bool

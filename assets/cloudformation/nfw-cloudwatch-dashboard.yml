@@ -2,7 +2,6 @@
 #
 ## https://github.com/aws-samples/aws-networkfirewall-cfn-templates
 #
-
 AWSTemplateFormatVersion: "2010-09-09"
 Description: AWS Network Firewall CloudWatch Dashboard
 Parameters:

@@ -54,4 +54,7 @@ locals {
   firewall_merged_rules = join("\n", [
     for x in coalesce(var.firewall_rules, []) : format("# --- %s\n%s", x.name, x.content)
   ])
+
+  ## The s3 dashboard url for the cloudwatch dashboard, which is passed to the cloudformation stack
+  dashboard_url = format("https://%s.s3.%s.amazonaws.com/%s", var.dashboard_bucket, local.region, var.dashboard_key)
 }
