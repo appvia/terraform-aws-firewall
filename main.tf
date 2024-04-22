@@ -3,7 +3,7 @@
 module "vpc" {
   count   = var.vpc_id == "" ? 1 : 0
   source  = "appvia/network/aws"
-  version = "0.2.1"
+  version = "0.2.2"
 
   availability_zones                    = var.availability_zones
   enable_nat_gateway                    = var.enable_egress
