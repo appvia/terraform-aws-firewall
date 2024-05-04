@@ -1,6 +1,12 @@
 # Globally rules for all networks
 reject tls any any -> any any (msg:"Rejecting all TLS 1.0 or 1.1"; ssl_version:tls1.0,tls1.1; sid:100000;)
 reject tcp $HOME_NET any -> $EXTERNAL_NET [53,135,139,389,445,1389,3389,4444] (msg:"Deny high risk destination ports"; sid:100001;)
+
+# Ensure we log all traffic to the AWS apis 
+alert tls $HOME_NET any -> $EXTERNAL_NET any (tls.sni; content:"amazonaws.com"; startswith; nocase; endswith; msg:"matching amazonaws destination"; priority:1; flow:to_server, established; sid:103; rev:1;)
+alert http $HOME_NET any -> $EXTERNAL_NET any (http.host; content:"amazonaws.com"; startswith; endswith; msg:"matching amazonaws destination"; priority:1; flow:to_server, established; sid:104; rev:1;)
+
+# General rules for all networks 
 alert tls $HOME_NET any -> $EXTERNAL_NET any (flow:to_server; msg:"Log TLS traffic to internet"; sid:100102;)
 alert http $HOME_NET any -> $EXTERNAL_NET any (flow:to_server; msg:"Log HTTP traffic to internet"; sid:100103;)
 pass  udp $HOME_NET any -> $EXTERNAL_NET 123 (msg:"Allow all NTP traffic"; app-layer-protocol:ntp; sid:100104;)
@@ -9,3 +15,4 @@ pass  tcp $HOME_NET any -> $EXTERNAL_NET 80 (msg:"Allow tcp all http traffic"; s
 
 # Globally permitted domains from all networks
 pass  tls $HOME_NET any -> $EXTERNAL_NET any (flow:to_server; msg:"Allow TLS traffic"; sid:100202;)
+
