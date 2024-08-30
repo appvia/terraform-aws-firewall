@@ -268,7 +268,7 @@ module "network_inspection_vpc_admin" {
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_network_firewall"></a> [network\_firewall](#module\_network\_firewall) | aws-ia/networkfirewall/aws | 1.0.1 |
-| <a name="module_vpc"></a> [vpc](#module\_vpc) | appvia/network/aws | 0.3.0 |
+| <a name="module_vpc"></a> [vpc](#module\_vpc) | appvia/network/aws | 0.3.1 |
 
 ## Resources
 
