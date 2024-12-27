@@ -1,19 +1,19 @@
 <!-- markdownlint-disable -->
-<a href="https://www.appvia.io/"><img src="./appvia_banner.jpg" alt="Appvia Banner"/></a><br/><p align="right"> <a href="https://registry.terraform.io/modules/appvia/firewall/aws/latest"><img src="https://img.shields.io/static/v1?label=APPVIA&message=Terraform%20Registry&color=191970&style=for-the-badge" alt="Terraform Registry"/></a></a> <a href="https://github.com/appvia/terraform-aws-firewall/releases/latest"><img src="https://img.shields.io/github/release/appvia/terraform-aws-firewall.svg?style=for-the-badge&color=006400" alt="Latest Release"/></a> <a href="https://appvia-community.slack.com/join/shared_invite/zt-1s7i7xy85-T155drryqU56emm09ojMVA#/shared-invite/email"><img src="https://img.shields.io/badge/Slack-Join%20Community-purple?style=for-the-badge&logo=slack" alt="Slack Community"/></a> <a href="https://github.com/appvia/terraform-aws-firewall/graphs/contributors"><img src="https://img.shields.io/github/contributors/appvia/terraform-aws-firewall.svg?style=for-the-badge&color=FF8C00" alt="Contributors"/></a>
+<a href="https://www.appvia.io/"><img src="https://github.com/appvia/terraform-aws-firewall/blob/main/appvia_banner.jpg?raw=true" alt="Appvia Banner"/></a><br/><p align="right"> <a href="https://registry.terraform.io/modules/appvia/firewall/aws/latest"><img src="https://img.shields.io/static/v1?label=APPVIA&message=Terraform%20Registry&color=191970&style=for-the-badge" alt="Terraform Registry"/></a></a> <a href="https://github.com/appvia/terraform-aws-firewall/releases/latest"><img src="https://img.shields.io/github/release/appvia/terraform-aws-firewall.svg?style=for-the-badge&color=006400" alt="Latest Release"/></a> <a href="https://appvia-community.slack.com/join/shared_invite/zt-1s7i7xy85-T155drryqU56emm09ojMVA#/shared-invite/email"><img src="https://img.shields.io/badge/Slack-Join%20Community-purple?style=for-the-badge&logo=slack" alt="Slack Community"/></a> <a href="https://github.com/appvia/terraform-aws-firewall/graphs/contributors"><img src="https://img.shields.io/github/contributors/appvia/terraform-aws-firewall.svg?style=for-the-badge&color=FF8C00" alt="Contributors"/></a>
 
 <!-- markdownlint-restore -->
 <!--
   ***** CAUTION: DO NOT EDIT ABOVE THIS LINE ******
 -->
 
-![Github Actions](../../actions/workflows/terraform.yml/badge.svg)
+![Github Actions](https://github.com/appvia/terraform-aws-firewall/actions/workflows/terraform.yml/badge.svg)
 
 # Terraform AWS Inspection VPC
 
 <em>Note: the following is purely for illustrative purposes</em>
 
 <p align="center">
-  <img src="docs/inspection.png">
+  <img src="https://github.com/appvia/terraform-aws-firewall/blob/main/docs/inspection.png?raw=true">
 </p>
 
 This repository manages the inspection vpc and rulesets within the AWS estate. The inspection VPC is seated at the heart of the estate, and leverages [AWS Network Firewall](https://aws.amazon.com/network-firewall/) as a managed solution. It's remit is
@@ -86,7 +86,7 @@ The module also supports the ability to deploy a CloudWatch dashboard to visuali
 ## Reusing an Existing VPC
 
 <p align="center">
-  <img src="docs/egress.jpg">
+  <img src="https://github.com/appvia/terraform-aws-firewall/blob/main/docs/egress.jpg?raw=true">
 </p>
 
 The module supports the ability to reuse an existing VPC. This is useful when the inspection VPC is being deployed into an existing environment. The options defined depend on whether egress is enabled or not.
