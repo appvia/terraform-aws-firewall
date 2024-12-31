@@ -1,4 +1,5 @@
 <!-- markdownlint-disable -->
+
 <a href="https://www.appvia.io/"><img src="https://github.com/appvia/terraform-aws-firewall/blob/main/appvia_banner.jpg?raw=true" alt="Appvia Banner"/></a><br/><p align="right"> <a href="https://registry.terraform.io/modules/appvia/firewall/aws/latest"><img src="https://img.shields.io/static/v1?label=APPVIA&message=Terraform%20Registry&color=191970&style=for-the-badge" alt="Terraform Registry"/></a></a> <a href="https://github.com/appvia/terraform-aws-firewall/releases/latest"><img src="https://img.shields.io/github/release/appvia/terraform-aws-firewall.svg?style=for-the-badge&color=006400" alt="Latest Release"/></a> <a href="https://appvia-community.slack.com/join/shared_invite/zt-1s7i7xy85-T155drryqU56emm09ojMVA#/shared-invite/email"><img src="https://img.shields.io/badge/Slack-Join%20Community-purple?style=for-the-badge&logo=slack" alt="Slack Community"/></a> <a href="https://github.com/appvia/terraform-aws-firewall/graphs/contributors"><img src="https://img.shields.io/github/contributors/appvia/terraform-aws-firewall.svg?style=for-the-badge&color=FF8C00" alt="Contributors"/></a>
 
 <!-- markdownlint-restore -->
@@ -253,8 +254,34 @@ module "network_inspection_vpc_admin" {
       ]
     })
   }
+```
 
+## IAM Permissions
 
+The following permissions are required to deploy the inspection firewall.
+
+```hcl
+module "network_inspection_vpc_admin" {
+  source  = "appvia/oidc/aws//modules/role"
+  version = "1.3.6"
+
+  name                    = var.repositories.firewall.role_name
+  description             = "Deployment role used to deploy the inspection vpc"
+  repository              = var.repositories.firewall.url
+  tags                    = var.tags
+
+  read_only_policy_arns = [
+    "arn:aws:iam::aws:policy/AWSResourceAccessManagerReadOnlyAccess",
+    "arn:aws:iam::aws:policy/ReadOnlyAccess",
+  ]
+  read_write_policy_arns = [
+    "arn:aws:iam::aws:policy/AWSResourceAccessManagerFullAccess",
+    "arn:aws:iam::aws:policy/AmazonEC2FullAccess",
+    "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess",
+  ]
+
+  provider = aws.network
+}
 ```
 
 <!-- BEGIN_TF_DOCS -->
