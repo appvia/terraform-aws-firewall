@@ -13,13 +13,12 @@ locals {
   ]
 }
 
-## Provision a vpc for the inspection firewall 
+## Provision a vpc for the inspection firewall
 module "vpc" {
   source  = "appvia/network/aws"
-  version = "0.2.1"
+  version = "0.4.0"
 
   availability_zones                    = var.availability_zones
-  enable_transit_gateway                = true
   enable_transit_gateway_appliance_mode = true
   name                                  = var.name
   private_subnet_netmask                = var.private_subnet_netmask
@@ -41,7 +40,7 @@ module "inspection" {
   tags               = var.tags
   transit_gateway_id = var.transit_gateway_id
 
-  ## The following variables are required for the inspection module (WITHOUT egress support) 
+  ## The following variables are required for the inspection module (WITHOUT egress support)
   vpc_id                    = module.vpc.vpc_id
   private_subnet_id_by_az   = module.vpc.private_subnet_id_by_az
   transit_route_table_by_az = module.vpc.transit_route_table_by_az

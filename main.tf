@@ -22,8 +22,7 @@ module "vpc" {
 
 ## Provision the AWS Network Firewall service in the inspection VPC
 module "network_firewall" {
-  source  = "aws-ia/networkfirewall/aws"
-  version = "1.0.1"
+  source = "github.com/appvia/terraform-aws-networkfirewall?ref=v1.0.2"
 
   network_firewall_description              = "Inspection VPC Firewall for ${var.name} environment"
   network_firewall_name                     = var.name

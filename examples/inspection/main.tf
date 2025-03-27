@@ -1,5 +1,5 @@
 #
-## Provisions a central inspection vpc 
+## Provisions a central inspection vpc
 #
 
 locals {
