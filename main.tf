@@ -3,11 +3,9 @@
 module "vpc" {
   count   = var.vpc_id == "" ? 1 : 0
   source  = "appvia/network/aws"
-  version = "0.3.4"
+  version = "0.4.0"
 
   availability_zones                    = var.availability_zones
-  enable_nat_gateway                    = var.enable_egress
-  enable_transit_gateway                = true
   enable_transit_gateway_appliance_mode = true
   name                                  = var.name
   nat_gateway_mode                      = local.nat_gateway_mode
