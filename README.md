@@ -17,17 +17,31 @@
   <img src="https://github.com/appvia/terraform-aws-firewall/blob/main/docs/inspection.png?raw=true">
 </p>
 
-This repository manages the inspection vpc and rulesets within the AWS estate. The inspection VPC is seated at the heart of the estate, and leverages [AWS Network Firewall](https://aws.amazon.com/network-firewall/) as a managed solution. It's remit is
+This repository manages the inspection VPC and rulesets within the AWS estate. The inspection VPC is seated at the heart of the estate, and leverages [AWS Network Firewall](https://aws.amazon.com/network-firewall/) as a managed solution. Its remit is:
 
-- To filter all traffic between networks and enviroments (i.e. production, development, ci).
+- To filter all traffic between networks and environments (i.e. production, development, ci).
 - To filter all egress traffic from the spokes to the outbound internet.
 - To provide the spokes with a central place to egress all traffic to the internet i.e. sharing NAT gateways.
 
+## Key Features
+
+- **AWS Network Firewall Integration**: Leverages AWS managed Network Firewall for stateful packet inspection
+- **Suricata Rule Support**: Supports custom Suricata rules for advanced threat detection
+- **Policy Variables**: Dynamic rule configuration using policy variables and IP sets
+- **IP Prefix Management**: Managed prefix lists for efficient IP address management
+- **External Rule Groups**: Support for AWS managed and custom external rule groups
+- **Egress Support**: Optional egress traffic routing through the inspection VPC
+- **CloudWatch Integration**: Comprehensive logging and monitoring with optional dashboard
+- **KMS Encryption**: Optional encryption for CloudWatch logs using KMS
+- **RAM Sharing**: Share firewall policies across AWS accounts and organizations
+- **VPC Reuse**: Deploy into existing VPCs or create new ones
+- **Protection Features**: Optional protection against accidental changes
+
 ## Rule Group Variables
 
-A firewall policy in AWS Network firewall comprises of one of more references stateful / stateless [rule groups](https://docs.aws.amazon.com/network-firewall/latest/developerguide/rule-groups.html). The difference between these two groups is similar to NACL vs security groups in AWS; where SG's have knowlegde of direction and permit established connections to return traffic without the need of an additional rule. Note this module follows AWS recommendations, and has opted to ignore stateless rules completely, deferring purely to stateful Suricata rules.
+A firewall policy in AWS Network Firewall comprises one or more references to stateful / stateless [rule groups](https://docs.aws.amazon.com/network-firewall/latest/developerguide/rule-groups.html). The difference between these two groups is similar to NACL vs security groups in AWS; where security groups have knowledge of direction and permit established connections to return traffic without the need of an additional rule. Note this module follows AWS recommendations, and has opted to ignore stateless rules completely, deferring purely to stateful Suricata rules.
 
-[Rule groups](https://docs.aws.amazon.com/network-firewall/latest/developerguide/rule-groups.html) also have the ability to source in variables containing ipsets (a collection of CIDR block) or portsets (a collection of ports). These be referenced within the Suricata rules themselves, providing a reusable snippet i.e.
+[Rule groups](https://docs.aws.amazon.com/network-firewall/latest/developerguide/rule-groups.html) also have the ability to source in variables containing ipsets (a collection of CIDR blocks) or portsets (a collection of ports). These can be referenced within the Suricata rules themselves, providing a reusable snippet i.e.
 
 ```shell
 (in the tfvars)
@@ -44,7 +58,49 @@ or
 pass  tcp [!$REMOTE_NET, $DEVOPS_NET] any -> $HOME_NET
 ```
 
-The module use the contents of the `var.firewall_rules` to source in the files and merge them together to produce the final ruleset.
+The module uses the contents of the `var.firewall_rules` to source in the files and merge them together to produce the final ruleset.
+
+## IP Prefixes
+
+The module supports the creation of managed prefix lists that can be referenced in Suricata rules. This is useful for managing large sets of IP addresses that need to be referenced in multiple rules.
+
+```hcl
+ip_prefixes = {
+  "blocked_ips" = {
+    name           = "blocked-ips"
+    address_family = "IPv4"
+    max_entries    = 1000
+    description    = "List of blocked IP addresses"
+    entries = [
+      {
+        cidr        = "192.168.1.0/24"
+        description = "Internal blocked range"
+      },
+      {
+        cidr        = "10.0.0.0/8"
+        description = "Another blocked range"
+      }
+    ]
+  }
+}
+```
+
+These prefix lists can then be referenced in Suricata rules using the `$BLOCKED_IPS` variable.
+
+## External Rule Groups
+
+The module supports referencing external rule groups that have been created outside of this module. This is useful for sharing rule groups across multiple firewall deployments or using AWS managed rule groups.
+
+```hcl
+external_rule_groups = [
+  {
+    priority = 100
+    arn      = "arn:aws:network-firewall:us-west-2:111122223333:stateful-rulegroup/domains"
+  }
+]
+```
+
+When using external rule groups, the module will not create its own stateful rule group and will instead use the provided external rule groups.
 
 ## Egress Support
 
@@ -53,7 +109,7 @@ The inspection VPC can be configured to support egress traffic. This is useful w
 To enable egress support,
 
 - `var.enable_egress` must be set to true.
-- `var.publie_subnet_netmask` must be set to a non-zero value.
+- `var.public_subnet_netmask` must be set to a non-zero value.
 
 ```hcl
 ## Provision a inspection firewall, but with an existing vpc
@@ -80,9 +136,100 @@ Currently the inspection VPC is setup to segregate the flow and alert logs into 
 
 This module also supports the ability to encrypt the logs using a KMS key. If the `var.create_kms_key` is set to true, a KMS key will be created and used to encrypt the logs. The key will be created in the same region as the logs.
 
+Alternatively, you can specify an existing KMS key using the `var.cloudwatch_kms` variable. This is useful when you want to use a centralized KMS key for all your CloudWatch logs.
+
+```hcl
+module "inspection" {
+  source = "../.."
+
+  # ... other variables ...
+  
+  # Option 1: Create a new KMS key
+  create_kms_key = true
+  
+  # Option 2: Use an existing KMS key
+  cloudwatch_kms = "alias/my-existing-key"
+}
+```
+
 ## CloudWatch Dashboard
 
-The module also supports the ability to deploy a CloudWatch dashboard to visualise the logs. The dashboard is created using a CloudFormation template, and is deployed into the same region as the logs. The dashboard is created using the `aws_cloudformation_stack` resource, and is created using the [assets/cloudfomation/nfw-cloudwatch-dashboard](assets/cloudfomation/nfw-cloudwatch-dashboard.yml) template.
+The module also supports the ability to deploy a CloudWatch dashboard to visualise the logs. The dashboard is created using a CloudFormation template, and is deployed into the same region as the logs. The dashboard is created using the `aws_cloudformation_stack` resource, and is created using the [assets/cloudformation/nfw-cloudwatch-dashboard](assets/cloudformation/nfw-cloudwatch-dashboard.yml) template.
+
+To enable the dashboard, set `var.enable_dashboard` to true:
+
+```hcl
+module "inspection" {
+  source = "../.."
+
+  # ... other variables ...
+  
+  enable_dashboard = true
+}
+```
+
+The dashboard provides comprehensive monitoring of your Network Firewall including:
+
+- Firewall metrics and performance
+- Flow and alert log analysis
+- Contributor insights for security monitoring
+- Custom widgets for traffic analysis
+
+## RAM Sharing
+
+The module supports sharing the firewall policy with other AWS accounts using AWS Resource Access Manager (RAM). This is useful when you want to share the same firewall policy across multiple accounts or organizations.
+
+```hcl
+module "inspection" {
+  source = "../.."
+
+  # ... other variables ...
+  
+  ram_principals = {
+    "account-1" = "123456789012"
+    "account-2" = "987654321098"
+  }
+}
+```
+
+The shared firewall policy can then be used by other accounts to create their own Network Firewall instances with the same rules.
+
+## Firewall Protection
+
+The module supports enabling protection against accidental changes to the firewall policy and subnets:
+
+```hcl
+module "inspection" {
+  source = "../.."
+
+  # ... other variables ...
+  
+  # Protect against policy changes
+  enable_policy_change_protection = true
+  
+  # Protect against subnet changes
+  enable_subnet_change_protection = true
+}
+```
+
+When enabled, these protections prevent accidental modifications that could disrupt network traffic.
+
+## Stateful Rule Capacity
+
+The module allows you to configure the capacity for stateful rule groups. The default capacity is 5000 rules, but this can be adjusted based on your needs:
+
+```hcl
+module "inspection" {
+  source = "../.."
+
+  # ... other variables ...
+  
+  # Increase capacity for more complex rule sets
+  stateful_capacity = 10000
+}
+```
+
+The maximum capacity is 30,000 rules per stateful rule group.
 
 ## Reusing an Existing VPC
 
@@ -258,29 +405,49 @@ module "network_inspection_vpc_admin" {
 
 ## IAM Permissions
 
-The following permissions are required to deploy the inspection firewall.
+The following permissions are required to deploy the inspection firewall. The module requires permissions for Network Firewall, VPC management, CloudWatch Logs, KMS (if using encryption), and RAM (if sharing resources).
 
-```hcl
-module "network_inspection_vpc_admin" {
-  source  = "appvia/oidc/aws//modules/role"
-  version = "1.3.6"
+### Required AWS Managed Policies
 
-  name                    = var.repositories.firewall.role_name
-  description             = "Deployment role used to deploy the inspection vpc"
-  repository              = var.repositories.firewall.url
-  tags                    = var.tags
+- `AWSResourceAccessManagerFullAccess` (for RAM sharing)
+- `AmazonEC2FullAccess` (for VPC and Network Firewall resources)
+- `CloudWatchLogsFullAccess` (for log group management)
+- `CloudFormationFullAccess` (if deploying the dashboard)
+- `ReadOnlyAccess` (for resource discovery)
 
-  read_only_policy_arns = [
-    "arn:aws:iam::aws:policy/AWSResourceAccessManagerReadOnlyAccess",
-    "arn:aws:iam::aws:policy/ReadOnlyAccess",
+### Required Inline Permissions
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "network-firewall:Associate*",
+        "network-firewall:Create*",
+        "network-firewall:Delete*",
+        "network-firewall:Describe*",
+        "network-firewall:Disassociate*",
+        "network-firewall:List*",
+        "network-firewall:Put*",
+        "network-firewall:Tag*",
+        "network-firewall:Untag*",
+        "network-firewall:Update*"
+      ],
+      "Effect": "Allow",
+      "Resource": "*"
+    },
+    {
+      "Action": ["iam:CreateServiceLinkedRole"],
+      "Effect": "Allow",
+      "Resource": ["arn:aws:iam::*:role/aws-service-role/network-firewall.amazonaws.com/AWSServiceRoleForNetworkFirewall"]
+    },
+    {
+      "Action": ["logs:*"],
+      "Effect": "Allow",
+      "Resource": ["*"]
+    }
   ]
-  read_write_policy_arns = [
-    "arn:aws:iam::aws:policy/AWSResourceAccessManagerFullAccess",
-    "arn:aws:iam::aws:policy/AmazonEC2FullAccess",
-    "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess",
-  ]
-
-  provider = aws.network
 }
 ```
 
@@ -289,7 +456,7 @@ module "network_inspection_vpc_admin" {
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 6.4 |
 
 ## Inputs
 
