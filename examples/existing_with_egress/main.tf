@@ -16,7 +16,7 @@ locals {
 ## Provision a vpc for the inspection firewall
 module "vpc" {
   source  = "appvia/network/aws"
-  version = "0.4.0"
+  version = "0.6.13"
 
   availability_zones                    = 3
   enable_transit_gateway_appliance_mode = true
