@@ -2,8 +2,8 @@
 locals {
   ## Indicates if we are creating the vpc or reusing an existing one 
   enable_vpc_creation = var.vpc_id == "" ? true : false
-  ## The currente region we are running against 
-  region = data.aws_region.current.name
+  ## The current region we are running against 
+  region = data.aws_region.current.region
   ## The account id we are running against
   account_id = data.aws_caller_identity.current.account_id
   ## Transit Gateway Route Table IDs for the VPC 

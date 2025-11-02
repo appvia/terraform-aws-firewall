@@ -3,7 +3,7 @@
 module "vpc" {
   count   = var.vpc_id == "" ? 1 : 0
   source  = "appvia/network/aws"
-  version = "0.6.12"
+  version = "0.6.13"
 
   availability_zones                    = var.availability_zones
   enable_transit_gateway_appliance_mode = true
@@ -22,7 +22,8 @@ module "vpc" {
 
 ## Provision the AWS Network Firewall service in the inspection VPC
 module "network_firewall" {
-  source = "github.com/appvia/terraform-aws-networkfirewall?ref=v1.0.2"
+  source  = "aws-ia/networkfirewall/aws"
+  version = "1.0.2"
 
   network_firewall_description              = "Inspection VPC Firewall for ${var.name} environment"
   network_firewall_name                     = var.name
