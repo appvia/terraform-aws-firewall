@@ -3,7 +3,7 @@
 module "vpc" {
   count   = var.vpc_id == "" ? 1 : 0
   source  = "appvia/network/aws"
-  version = "0.6.13"
+  version = "0.6.14"
 
   availability_zones                    = var.availability_zones
   enable_transit_gateway_appliance_mode = true
