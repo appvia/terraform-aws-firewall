@@ -3,5 +3,13 @@
   "extends": [
     "config:recommended",
     ":semanticCommitTypeAll(chore)"
+  ],
+  "packageRules": [
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "pinDigests": true
+    }
   ]
 }
