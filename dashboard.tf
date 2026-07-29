@@ -3,9 +3,16 @@
 ## Note, the template for the dashboard is too big to be passed via the template_body parameter, so 
 ## we store it in an S3 bucket and pass the URL to the template_url parameter. 
 #
+locals {
+  ## If the dashboard is enabled, we need to create an S3 bucket to store the dashboard template
+  ## and assign the appropriate IAM policy to the bucket.
+  create_dashboard_bucket = var.enable_dashboard
+}
 
 ## Create an S3 bucket allowing the account to access the bucket
 data "aws_iam_policy_document" "dashboard" {
+  count = local.create_dashboard_bucket ? 1 : 0
+
   statement {
     principals {
       type        = "AWS"
@@ -20,8 +27,8 @@ data "aws_iam_policy_document" "dashboard" {
     ]
 
     resources = [
-      aws_s3_bucket.dashboard.arn,
-      "${aws_s3_bucket.dashboard.arn}/*",
+      aws_s3_bucket.dashboard[0].arn,
+      "${aws_s3_bucket.dashboard[0].arn}/*",
     ]
   }
 
@@ -38,8 +45,8 @@ data "aws_iam_policy_document" "dashboard" {
     ]
 
     resources = [
-      aws_s3_bucket.dashboard.arn,
-      "${aws_s3_bucket.dashboard.arn}/*",
+      aws_s3_bucket.dashboard[0].arn,
+      "${aws_s3_bucket.dashboard[0].arn}/*",
     ]
   }
 }
@@ -48,6 +55,8 @@ data "aws_iam_policy_document" "dashboard" {
 # tfsec:ignore:aws-s3-enable-bucket-encryption
 # tfsec:ignore:aws-s3-enable-bucket-logging
 resource "aws_s3_bucket" "dashboard" {
+  count = local.create_dashboard_bucket ? 1 : 0
+
   bucket        = var.dashboard_bucket
   force_destroy = true
   tags          = var.tags
@@ -55,30 +64,29 @@ resource "aws_s3_bucket" "dashboard" {
 
 ## Assign the bucket policy to the bucket 
 resource "aws_s3_bucket_policy" "dashboard" {
-  bucket = aws_s3_bucket.dashboard.bucket
-  policy = data.aws_iam_policy_document.dashboard.json
+  count = local.create_dashboard_bucket ? 1 : 0
+
+  bucket = aws_s3_bucket.dashboard[0].bucket
+  policy = data.aws_iam_policy_document.dashboard[0].json
 }
 
 ## Ensure the bucket is not public 
 resource "aws_s3_bucket_public_access_block" "dashboard" {
-  bucket = aws_s3_bucket.dashboard.bucket
+  count = local.create_dashboard_bucket ? 1 : 0
 
+  bucket = aws_s3_bucket.dashboard[0].bucket
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
   restrict_public_buckets = true
 }
 
-## Ensure the bucket is private
-resource "aws_s3_bucket_acl" "dashboard" {
-  bucket = aws_s3_bucket.dashboard.bucket
-  acl    = "private"
-}
-
 ## Ensure encryption is enabled on the bucket 
 # tfsec:ignore:aws-s3-encryption-customer-key
 resource "aws_s3_bucket_server_side_encryption_configuration" "dashboard" {
-  bucket = aws_s3_bucket.dashboard.bucket
+  count = local.create_dashboard_bucket ? 1 : 0
+
+  bucket = aws_s3_bucket.dashboard[0].bucket
 
   rule {
     apply_server_side_encryption_by_default {
@@ -90,7 +98,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "dashboard" {
 
 ## Ensure ownership is enabled on the bucket 
 resource "aws_s3_bucket_ownership_controls" "dashboard" {
-  bucket = aws_s3_bucket.dashboard.bucket
+  count = local.create_dashboard_bucket ? 1 : 0
+
+  bucket = aws_s3_bucket.dashboard[0].bucket
 
   rule {
     object_ownership = "BucketOwnerPreferred"
@@ -99,7 +109,9 @@ resource "aws_s3_bucket_ownership_controls" "dashboard" {
 
 ## Ensure versioning is enabled on the bucket 
 resource "aws_s3_bucket_versioning" "dashboard" {
-  bucket = aws_s3_bucket.dashboard.bucket
+  count = local.create_dashboard_bucket ? 1 : 0
+
+  bucket = aws_s3_bucket.dashboard[0].bucket
   versioning_configuration {
     status = "Enabled"
   }
@@ -107,7 +119,9 @@ resource "aws_s3_bucket_versioning" "dashboard" {
 
 ## Push the cloudwatch dashboard template to the bucket 
 resource "aws_s3_object" "dashboard" {
-  bucket                 = aws_s3_bucket.dashboard.bucket
+  count = local.create_dashboard_bucket ? 1 : 0
+
+  bucket                 = aws_s3_bucket.dashboard[0].bucket
   bucket_key_enabled     = true
   key                    = var.dashboard_key
   server_side_encryption = "AES256"
@@ -117,9 +131,9 @@ resource "aws_s3_object" "dashboard" {
 
 ## Provisions the cloudwatch dashboard
 resource "aws_cloudformation_stack" "dashboard" {
-  count = var.enable_dashboard ? 1 : 0
+  count = local.create_dashboard_bucket ? 1 : 0
 
-  name         = format("LZA-NFW-%s-CloudWatch-Dashboard", title(var.name))
+  name         = format("LZ-NFW-%s-CloudWatch-Dashboard", title(var.name))
   capabilities = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND", "CAPABILITY_IAM"]
   on_failure   = "ROLLBACK"
   tags         = var.tags
