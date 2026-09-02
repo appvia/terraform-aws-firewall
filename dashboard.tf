@@ -74,7 +74,7 @@ resource "aws_s3_bucket_policy" "dashboard" {
 resource "aws_s3_bucket_public_access_block" "dashboard" {
   count = local.create_dashboard_bucket ? 1 : 0
 
-  bucket = aws_s3_bucket.dashboard[0].bucket
+  bucket                  = aws_s3_bucket.dashboard[0].bucket
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
